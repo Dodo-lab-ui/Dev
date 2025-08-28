@@ -1,5 +1,5 @@
 ESX = nil
-
+a
 local hasDrugs = false
 
 cachedPeds = {}
