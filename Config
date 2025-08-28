@@ -1,5 +1,5 @@
 Config = {}
-a
+
 Config.DiscussTime = math.random(3500,6500)
 
 
