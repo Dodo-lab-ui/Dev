@@ -1,0 +1,266 @@
+-- -- Configuration du webhook Discord
+-- local WEBHOOK_URL = "https://discord.com/api/webhooks/1403263025410211980/HC-HsS9CKXbkaSd2dY7aWrdQS85YUoh_v19qkDVe_O6le3_qoRc24j4VH5u4jFBumroK" -- Remplacez par votre URL de webhook Discord
+
+-- -- Configuration
+-- local Config = {
+--     webhook = {
+--         enabled = true,
+--         bot_name = "MDrugsales Bot",
+--         bot_avatar = "https://i.imgur.com/4M34hi2.png",
+--         colors = {
+--             normal_sale = 15158332,  -- Rouge normal
+--             cheating = 16711680,     -- Rouge vif
+--             test = 65280             -- Vert
+--         }
+--     },
+--     validZones = {
+--         "BEACH", "DELBE", "DELPE", "BURTON", "DTVINE", "EAST_V", "MOVIE", 
+--         "VESP", "VCANA", "LMESA", "ROCKF", "LEGSQU", "GOLF", "CHIL", 
+--         "WVINE", "RGLEN", "RICHM", "SKID", "STAD", "BANHAMC", "BHAMCA", 
+--         "MIRR", "PALETO", "SANDY", "VINE"
+--     },
+--     zoneNames = {
+--         ["BEACH"] = "Vespucci Beach",
+--         ["DELBE"] = "Del Perro Beach",
+--         ["DELPE"] = "Del Perro",
+--         ["BURTON"] = "Burton",
+--         ["DTVINE"] = "Downtown Vinewood",
+--         ["EAST_V"] = "East Vinewood",
+--         ["MOVIE"] = "Richards Majestic",
+--         ["VESP"] = "Vespucci",
+--         ["VCANA"] = "Vespucci Canals",
+--         ["LMESA"] = "La Mesa",
+--         ["ROCKF"] = "Rockford Hills",
+--         ["LEGSQU"] = "Legion Square",
+--         ["GOLF"] = "GWC and Golfing Society",
+--         ["CHIL"] = "Vinewood Hills",
+--         ["WVINE"] = "West Vinewood",
+--         ["RGLEN"] = "Richman Glen",
+--         ["RICHM"] = "Richman",
+--         ["SKID"] = "Mission Row",
+--         ["STAD"] = "Maze Bank Arena",
+--         ["BANHAMC"] = "Banham Canyon Dr",
+--         ["BHAMCA"] = "Banham Canyon",
+--         ["MIRR"] = "Mirror Park",
+--         ["PALETO"] = "Paleto Bay",
+--         ["SANDY"] = "Sandy Shore",
+--         ["VINE"] = "Vinewood"
+--     }
+-- }
+
+-- -- Fonction de test du webhook
+-- function TestWebhook()
+--     if not Config.webhook.enabled then
+--         print("^1[MDrugsales] ^7Webhook désactivé dans la configuration")
+--         return
+--     end
+    
+--     if not WEBHOOK_URL or WEBHOOK_URL == "" or WEBHOOK_URL == "https://discord.com/api/webhooks/1403263025410211980/HC-HsS9CKXbkaSd2dY7aWrdQS85YUoh_v19qkDVe_O6le3_qoRc24j4VH5u4jFBumroK" then
+--         print("^1[MDrugsales] ^7Webhook URL non configurée pour le test")
+--         return
+--     end
+    
+--     local testEmbed = {
+--         {
+--             ["title"] = "🧪 Test du Webhook MDrugsales",
+--             ["description"] = "Ce message confirme que le webhook fonctionne correctement !",
+--             ["color"] = Config.webhook.colors.test,
+--             ["footer"] = {
+--                 ["text"] = "MDrugsales Test | " .. os.date("%d/%m/%Y à %H:%M:%S")
+--             },
+--             ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ")
+--         }
+--     }
+    
+--     PerformHttpRequest(WEBHOOK_URL, function(err, text, headers)
+--         if err == 200 then
+--             print("^2[MDrugsales] ^7Test webhook réussi !")
+--         else
+--             print("^1[MDrugsales] ^7Test webhook échoué. Code d'erreur: " .. tostring(err))
+--             print("^1[MDrugsales] ^7Réponse: " .. tostring(text))
+--         end
+--     end, 'POST', json.encode({
+--         username = Config.webhook.bot_name,
+--         embeds = testEmbed
+--     }), { ['Content-Type'] = 'application/json' })
+-- end
+
+-- -- Commande pour tester le webhook
+-- RegisterCommand('testwebhook', function(source, args, rawCommand)
+--     if source == 0 then -- Commande console uniquement
+--         TestWebhook()
+--     else
+--         print("^1[MDrugsales] ^7Cette commande ne peut être exécutée que depuis la console")
+--     end
+-- end)
+
+-- -- Fonction pour obtenir les identifiants du joueur
+-- function GetPlayerIdentifiers(source)
+--     local identifiers = {
+--         steam = "",
+--         license = "",
+--         discord = "",
+--         fivem = "",
+--         ip = ""
+--     }
+    
+--     for i = 0, GetNumPlayerIdentifiers(source) - 1 do
+--         local id = GetPlayerIdentifier(source, i)
+--         if string.find(id, "steam:") then
+--             identifiers.steam = id
+--         elseif string.find(id, "license:") then
+--             identifiers.license = id
+--         elseif string.find(id, "discord:") then
+--             identifiers.discord = id
+--         elseif string.find(id, "fivem:") then
+--             identifiers.fivem = id
+--         elseif string.find(id, "ip:") then
+--             identifiers.ip = id
+--         end
+--     end
+    
+--     return identifiers
+-- end
+
+-- -- Fonction pour envoyer le webhook
+-- function SendDrugSaleWebhook(source, itemName, quantity, price, location)
+--     if not Config.webhook.enabled then
+--         return
+--     end
+    
+--     if not WEBHOOK_URL or WEBHOOK_URL == "" or WEBHOOK_URL == "https://discord.com/api/webhooks/YOUR_WEBHOOK_URL_HERE" then
+--         print("^1[MDrugsales] ^7Webhook URL non configurée dans logs.lua")
+--         return
+--     end
+
+--     local xPlayer = ESX and ESX.GetPlayerFromId(source)
+--     if ESX and not xPlayer then 
+--         print("^1[MDrugsales] ^7Joueur non trouvé dans ESX: " .. source)
+--         return 
+--     end
+    
+--     -- Vérification de la position actuelle du joueur
+--     local locationCheck = CheckPlayerLocationForSale(source)
+--     local isCheating = not locationCheck.isValid
+    
+--     local identifiers = GetPlayerIdentifiers(source)
+--     local playerName = GetPlayerName(source)
+--     local rpName = (xPlayer and xPlayer.getName and xPlayer.getName()) or playerName or "Inconnu"
+    
+--     -- Formatage des identifiants pour l'affichage
+--     local steamFormatted = identifiers.steam:gsub("steam:", "")
+--     local discordId = identifiers.discord:gsub("discord:", "")
+    
+--     -- Déterminer la couleur et le titre selon la situation
+--     local color = isCheating and Config.webhook.colors.cheating or Config.webhook.colors.normal_sale
+--     local title = isCheating and "🚨 TRICHE PROBABLE - Vente de Drogue" or "🚨 Vente de Drogue Détectée"
+    
+--     -- Création des champs de base
+--     local fields = {
+--         {
+--             ["name"] = "👤 Informations Joueur",
+--             ["value"] = string.format("**Nom RP:** %s\n**Pseudo:** %s", rpName or "Inconnu", playerName or "Inconnu"),
+--             ["inline"] = true
+--         },
+--         {
+--             ["name"] = "🆔 Identifiants",
+--             ["value"] = string.format("**License:** `%s`\n**Steam:** `%s`\n**Discord:** `<@%s>`", 
+--                 identifiers.license or "Inconnu",
+--                 steamFormatted or "Inconnu",
+--                 discordId or "Inconnu"
+--             ),
+--             ["inline"] = true
+--         },
+--         {
+--             ["name"] = "💊 Détails de la Vente",
+--             ["value"] = string.format("**Item:** %s\n**Quantité:** %d\n**Prix:** $%d", itemName, quantity, price),
+--             ["inline"] = true
+--         }
+--     }
+    
+--     -- Ajouter les informations de localisation avec détection de triche
+--     if isCheating then
+--         table.insert(fields, {
+--             ["name"] = "⚠️ ALERTE TRICHE",
+--             ["value"] = string.format("**Statut:** TRICHE PROBABLE\n**Zone Actuelle:** %s\n**Coordonnées:** x: %.2f, y: %.2f, z: %.2f", 
+--                 GetLocationName(locationCheck.zone),
+--                 locationCheck.coords.x,
+--                 locationCheck.coords.y,
+--                 locationCheck.coords.z
+--             ),
+--             ["inline"] = false
+--         })
+--         table.insert(fields, {
+--             ["name"] = "📍 Zone Déclarée",
+--             ["value"] = string.format("**Zone:** %s", location or "Inconnu"),
+--             ["inline"] = false
+--         })
+--     else
+--         table.insert(fields, {
+--             ["name"] = "📍 Localisation",
+--             ["value"] = string.format("**Zone:** %s\n**Coordonnées:** x: %.2f, y: %.2f, z: %.2f", 
+--                 location or "Inconnu",
+--                 locationCheck.coords.x,
+--                 locationCheck.coords.y,
+--                 locationCheck.coords.z
+--             ),
+--             ["inline"] = false
+--         })
+--     end
+    
+--     -- Création de l'embed Discord
+--     local embed = {
+--         {
+--             ["title"] = title,
+--             ["description"] = isCheating and "⚠️ **ATTENTION**: Le joueur a vendu de la drogue en dehors des zones autorisées!" or "Un joueur a vendu de la drogue",
+--             ["color"] = color,
+--             ["fields"] = fields,
+--             ["footer"] = {
+--                 ["text"] = "MDrugsales | " .. os.date("%d/%m/%Y à %H:%M:%S")
+--             },
+--             ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ")
+--         }
+--     }
+    
+--     -- Envoi du webhook avec gestion d'erreur améliorée
+--     PerformHttpRequest(WEBHOOK_URL, function(err, text, headers) 
+--         if err ~= 200 then
+--             print("^1[MDrugsales] ^7Erreur lors de l'envoi du webhook: " .. tostring(err))
+--             print("^1[MDrugsales] ^7Réponse: " .. tostring(text))
+--         else
+--             print("^2[MDrugsales] ^7Webhook envoyé avec succès")
+--         end
+--     end, 'POST', json.encode({
+--         username = Config.webhook.bot_name,
+--         avatar_url = Config.webhook.bot_avatar,
+--         embeds = embed
+--     }), { ['Content-Type'] = 'application/json' })
+-- end
+
+-- -- Fonction pour convertir le nom de zone en français
+-- function GetLocationName(zone)
+--     return Config.zoneNames[zone] or zone or "Zone Inconnue"
+-- end
+
+-- -- Fonction pour vérifier si une zone est autorisée pour la vente
+-- function IsValidSellZone(zone)
+--     for _, validZone in pairs(Config.validZones) do
+--         if zone == validZone then
+--             return true
+--         end
+--     end
+--     return false
+-- end
+
+-- -- Fonction pour vérifier la localisation du joueur au moment de la vente
+-- function CheckPlayerLocationForSale(source)
+--     local playerPed = GetPlayerPed(source)
+--     local coords = GetEntityCoords(playerPed)
+--     local zone = GetZoneAtCoords(coords.x, coords.y, coords.z)
+    
+--     return {
+--         coords = coords,
+--         zone = zone,
+--         isValid = IsValidSellZone(zone)
+--     }
+-- end
